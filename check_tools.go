@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/md5"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -14,7 +15,12 @@ func main() {
 	var parameter string
 
 	// Ключи для командной строки
-	flag.StringVar(&mode, "mode", "", "mode of the check [urldecode, urlencode, jsonfile]")
+	// urlencode - кодирует url escape символами
+	// urldecode - декодирует url
+	// jsonfile - проверяет синтаксис json файла и одновременно выводит параметры CDN если есть
+	// md5 - преобразует строку в md5 hash
+	// help - вывод помощи
+	flag.StringVar(&mode, "mode", "", "mode of the check [urldecode, urlencode, jsonfile, md5, h]")
 	flag.StringVar(&parameter, "p", "", "incoming value (parameter)")
 
 	flag.Parse()
@@ -48,7 +54,17 @@ func main() {
 			fmt.Println("Result: JSON OK")
 			fmt.Println("CDN Domains:", jsonval["workflow"].(map[string]interface{})["Domains"])
 		}
+	} else if mode == "md5" {
+		hash := md5.Sum([]byte(parameter))
+		fmt.Printf("Result: %x\n", hash)
+	} else if mode == "help" {
+		fmt.Println("urlencode - кодирует url escape символами")
+		fmt.Println("urldecode - декодирует url")
+		fmt.Println("jsonfile - проверяет синтаксис json файла и одновременно выводит параметры CDN если есть")
+		fmt.Println("md5 - преобразует строку в md5 hash")
+		fmt.Println("help - вывод помощи")
+		fmt.Println("ПРИМЕР: ./check_tools -mode urlencode -p 'ABC!@23%'")
 	} else {
-		fmt.Println("ERROR: unrecognized mode, valid = [urldecode, urlencode, jsonfile]")
+		fmt.Println("ERROR: unrecognized mode, valid = [urldecode, urlencode, jsonfile, md5, h]")
 	}
 }
